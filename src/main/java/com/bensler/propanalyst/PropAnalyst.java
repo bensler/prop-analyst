@@ -39,13 +39,20 @@ public class PropAnalyst {
     }
 
     private void analyze(final LoadedProps slave) {
-        System.out.println("slave: " + slave.getSrcFilename());
-        for (String key : master.getAdditionalKeysIn(slave)) {
-            System.out.println("+" + key);
+        final List<String> additionalKeysIn = master.getAdditionalKeysIn(slave);
+        final List<String> missingKeys = master.getMissingKeysIn(slave);
+
+        System.out.println("slave:  " + slave.getSrcFilename());
+        for (String key : additionalKeysIn) {
+            System.out.println("+ " + key);
         }
 
-        for (String key : master.getMissingKeysIn(slave)) {
-            System.out.println("-" + key);
+        for (String key : missingKeys) {
+            System.out.println("- " + key);
+        }
+
+        if (additionalKeysIn.isEmpty() && missingKeys.isEmpty()) {
+            System.out.println("o equal");
         }
     }
 
