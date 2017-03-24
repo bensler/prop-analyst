@@ -1,5 +1,7 @@
 package com.bensler.propanalyst;
 
+import static java.util.Collections.unmodifiableList;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 
@@ -21,12 +23,14 @@ public class PropAnalyst {
 
     public PropAnalyst(final String masterPropertyFileName, final List<String> otherPropertyFilenames)
         throws IOException {
-        master = load(masterPropertyFileName);
+        final List<LoadedProps> tmpSlaves = new ArrayList<LoadedProps>(otherPropertyFilenames.size());
 
-        slaves = new ArrayList<LoadedProps>(otherPropertyFilenames.size()); // TODO Immutable
         for (String propFilename : otherPropertyFilenames) {
-            slaves.add(load(propFilename));
+            tmpSlaves.add(load(propFilename));
         }
+
+        master = load(masterPropertyFileName);
+        slaves = unmodifiableList(tmpSlaves);
     }
 
     public void analyze() {
@@ -39,19 +43,18 @@ public class PropAnalyst {
     }
 
     private void analyze(final LoadedProps slave) {
-        final List<String> additionalKeysIn = master.getAdditionalKeysIn(slave);
-        final List<String> missingKeys = master.getMissingKeysIn(slave);
+        final PropsDiff diff = new PropsDiff(master, slave);
 
         System.out.println("slave:  " + slave.getSrcFilename());
-        for (String key : additionalKeysIn) {
+        for (String key : diff.getAdditionalKeysInSlave()) {
             System.out.println("+ " + key);
         }
 
-        for (String key : missingKeys) {
+        for (String key : diff.getMissingKeysInSlave()) {
             System.out.println("- " + key);
         }
 
-        if (additionalKeysIn.isEmpty() && missingKeys.isEmpty()) {
+        if (diff.isEmpty()) {
             System.out.println("o equal");
         }
     }

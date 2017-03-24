@@ -1,5 +1,7 @@
 package com.bensler.propanalyst;
 
+import static java.util.Collections.unmodifiableList;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,14 +15,15 @@ public class LoadedProps {
 
     public LoadedProps(final String aSrcFilename, final Properties props) {
         final Set<Object> keySet = props.keySet();
+        final List<String> tmpKeys = new ArrayList<String>(keySet.size());
 
         srcFilename = aSrcFilename;
-        keys = new ArrayList<String>(keySet.size()); // TODO immutable
         for (Object key : keySet) {
-            keys.add(key.toString());
+            tmpKeys.add(key.toString());
         }
 
-        Collections.sort(keys);
+        Collections.sort(tmpKeys);
+        keys = unmodifiableList(tmpKeys);
     }
 
     String getSrcFilename() {
@@ -31,14 +34,14 @@ public class LoadedProps {
         final List<String> slaveKeys = new ArrayList<String>(slave.keys);
 
         slaveKeys.removeAll(keys);
-        return slaveKeys;
+        return unmodifiableList(slaveKeys);
     }
 
     List<String> getMissingKeysIn(final LoadedProps slave) {
         final List<String> thisKeys = new ArrayList<String>(keys);
 
         thisKeys.removeAll(slave.keys);
-        return thisKeys;
+        return unmodifiableList(thisKeys);
     }
 
 }
